@@ -12,7 +12,9 @@ Explanation:
 
 
 Install the dependencies using:
-pip install -r requirements.txt
+
+    pip install -r requirements.txt
 
 Run the application:
-python run.py
+
+    python run.py

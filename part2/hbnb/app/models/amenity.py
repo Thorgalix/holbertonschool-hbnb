@@ -1,11 +1,8 @@
-from Base_Class import Base_Class
+from Base_Class import BaseClass
 
-class amenity(Base_Class):
-    def __init__(self, name, description, place_id):
+class Amenity(BaseClass):
+    def __init__(self, name, description):
         super().__init__()
         self.name = name
         self.description = description
-        self.place_id = place_id
-
-    def get_places():
-        pass
+        self.places = []

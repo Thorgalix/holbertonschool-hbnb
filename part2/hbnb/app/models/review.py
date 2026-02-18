@@ -1,19 +1,17 @@
-from Base_Class import Base_Class
+from Base_Class import BaseClass
 
-class review(Base_Class):
-    def __init__(self, rating, comment, user_id, place_id):
+class Review(BaseClass):
+    def __init__(self, rating, comment, user, place):
         super().__init__()
         self.rating = rating
         self.comment = comment
-        self.user_id = user_id
-        self.place_id = place_id
+        self.user = user
+        self.place = place
 
-    def validate_rating():
+        if user:
+            user.reviews.append(self)
+        if place:
+            place.reviews.append(self)
+
+    def validate_rating(self):
         pass
-
-    def get_author():
-        pass
-
-    def get_place():
-        pass
-

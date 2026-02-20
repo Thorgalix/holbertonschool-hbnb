@@ -20,12 +20,12 @@ class AmenityList(Resource):
         if existing_amenity:
             return  {'error': 'amenity already exist'}, 400
         new_amenity = facade.create_amenity(amenity_data)
-        return {'name':new_amenity.name}
+        return {'name':new_amenity.name}, 201
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """Retrieve a list of all amenities"""
-        amenity = facade.get_all_amenities(amenity)
+        amenity = facade.get_all_amenities()
         return {'name': amenity.name}
 
 @api.route('/<amenity_id>')
@@ -37,7 +37,7 @@ class AmenityResource(Resource):
         amenity = facade.get_amenity(amenity_id)
         if not amenity:
             return {'error': 'Amenity not found'}, 404
-        return {'name': amenity.name}
+        return {'name': amenity.name}, 200
 
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
@@ -46,4 +46,8 @@ class AmenityResource(Resource):
     def put(self, amenity_id):
         """Update an amenity's information"""
         amenity  = facade.get_amenity(amenity_id)
-        amenity
+        if not amenity:
+            return {'error': 'Amenity not found'}, 404
+        updated_data = api.payload
+        updated_amenity = facade.update_amenity(amenity_id, updated_data)
+        return {'name': updated_amenity.name}, 200

@@ -3,9 +3,10 @@ from app.services import facade
 
 api = Namespace('amenities', description='Amenity operations')
 
-# Define the amenity model for input validation and documentation
+#Define the amenity model for input validation and documentation
 amenity_model = api.model('Amenity', {
-    'name': fields.String(required=True, description='Name of the amenity')
+    'name': fields.String(required=True, description='Name of the amenity'),
+    'description': fields.String(description='Description of the amenity')  # facultatif
 })
 
 @api.route('/')
@@ -16,11 +17,21 @@ class AmenityList(Resource):
     def post(self):
         """Register a new amenity"""
         amenity_data = api.payload
+
+        # Vérifier doublon par nom
         existing_amenity = next((a for a in facade.get_all_amenities() if a.name == amenity_data['name']), None)
         if existing_amenity:
-            return  {'error': 'amenity already exist'}, 400
+            return {'error': 'Amenity already exists'}, 400
+
+        # Créer l’amenity
         new_amenity = facade.create_amenity(amenity_data)
-        return {'id': new_amenity.id, 'name':new_amenity.name}, 201
+
+        # Retourner l’ID généré + info pour pouvoir l’utiliser dans les places
+        return {
+            'id': new_amenity.id,
+            'name': new_amenity.name,
+            'description': getattr(new_amenity, 'description', "")
+        }, 201
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):

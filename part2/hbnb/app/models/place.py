@@ -1,19 +1,41 @@
 from app.models.Base_Class import BaseClass
 
 class Place(BaseClass):
-    def __init__(self, title, description, price, latitude, longitude, owner):
+    def __init__(self, title, description, price, amenities, latitude, longitude, owner):
         super().__init__()
         self.title = title
         self.description = description
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.owner = owner      # Relation place/user
+        self.owner = owner # Relation place/user
         self.reviews = []       # Relations place / review
-        self.amenities = []     # Relations place / amenities
+        self.amenities = amenities     # Relations place / amenities
 
-        if owner:
-            owner.places.append(self)
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, value):
+        self._price = self.validate_price(value)
+
+    @property
+    def latitude(self):
+        return self._latitude
+
+    @latitude.setter
+    def latitude(self, value):
+        self._latitude = self.validate_latitude(value)
+
+    @property
+    def longitude(self):
+        return self._longitude
+
+    @longitude.setter
+    def longitude(self, value):
+        self._longitude = self.validate_longitude(value)
+
 
     def validate_price(self, price):
         try:

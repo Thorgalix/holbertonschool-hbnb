@@ -13,5 +13,21 @@ class Review(BaseClass):
         if place:
             place.reviews.append(self)
 
-    def validate_rating(self):
-        pass
+
+    @property
+    def rating(self):
+        return self._rating
+    @rating.setter
+
+
+    def rating(self,value):
+        self._rating = self.validate_rating(value)
+
+    def validate_rating(self, rating):
+        try:
+            rating = int(rating)
+            if rating > 5 or rating < 0:
+                raise ValueError("Rating must be between 0 and 5")
+            return rating
+        except (TypeError, ValueError):
+            raise ValueError("Rating must be between 0 and 5")

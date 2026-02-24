@@ -2,11 +2,13 @@ from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
+from app.models.review import Review
 class HBnBFacade:
     def __init__(self):
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
+        self.review_repo = InMemoryRepository()
         '''Gestion USER'''
     def create_user(self, user_data):
         # vérifier doublon
@@ -115,7 +117,6 @@ class HBnBFacade:
         self.place_repo.add(place)
         return place
 
-
     def get_place(self, place_id):
         return self.place_repo.get(place_id)
 
@@ -154,3 +155,53 @@ class HBnBFacade:
         return place
 
 
+    '''Gestion Review'''
+    def create_review(self, review_data):
+
+        # Vérifier user
+        user = self.user_repo.get(review_data["user_id"])
+        if not user:
+            raise ValueError("Owner not found")
+        # Vérifier place
+        place = self.place_repo.get(review_data["place_id"])
+        if not place:
+            raise ValueError("Place not found")
+
+        review = Review(
+            rating=review_data["rating"],
+            comment=review_data["comment"],
+            user=user,
+            place=place
+        )
+        self.review_repo.add(review)
+        return review
+
+
+
+    def get_review(self, review_id):
+        return self.review_repo.get(review_id)
+
+    def get_all_reviews(self):
+        return self.review_repo.get_all()
+
+    def get_reviews_by_place(self, place_id):
+        return self.place_repo.get_by_attribute('place_id', place_id)
+
+    def update_review(self, review_id, review_data):
+        review = self.review_repo.get(review_id)
+        if not review:
+            return None
+        #update simple fields
+        if "rating" in review_data:
+            review.rating = review_data["rating"]
+        if "comment" in review_data:
+            review.comment = review_data["comment"]
+
+        review.save()
+        return review
+
+    def delete_review(self, review_id):
+        review = self.review_repo.get(review_id)
+        if not review:
+            return None
+        return self.review_repo.delete(review)

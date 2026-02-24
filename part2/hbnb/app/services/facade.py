@@ -19,6 +19,23 @@ class HBnBFacade:
     def get_user_by_email(self, email):
         return self.user_repo.get_by_attribute('email', email)
 
+    def update_user(self, user_id, user_data):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return None
+
+        #update simple fields
+        if "first_name" in user_data:
+            user.first_name = user_data["first_name"]
+        if "last_name" in user_data:
+            user.last_name = user_data["last_name"]
+        if "email" in user_data:
+            user.email = user_data["email"]
+        if "password" in user_data:
+            user.password = user_data["password"]
+
+        user.save()
+        return user
     '''Gestion amenity'''
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
@@ -36,17 +53,17 @@ class HBnBFacade:
         return self.amenity_repo.update(amenity_id, amenity_data)
     '''Gestion place'''
     def create_place(self, place_data):
-         # 1️⃣ Vérifier doublon
+    # Vérifier doublon
         for place in self.place_repo.get_all():
             if place.title == place_data["title"]:
                 raise ValueError("Place already registered")
 
-    # 2️⃣ Vérifier owner
+    # Vérifier owner
         owner = self.user_repo.get(place_data["owner_id"])
         if not owner:
             raise ValueError("Owner not found")
 
-    # 3️⃣ Vérifier amenities
+    # Vérifier amenities
         amenities = []
         for amenity_id in place_data.get("amenities", []):
             amenity = self.amenity_repo.get(amenity_id)
@@ -54,7 +71,7 @@ class HBnBFacade:
                 raise ValueError(f"Amenity {amenity_id} not found")
             amenities.append(amenity)
 
-    # 4️⃣ Créer le Place
+    # Créer le Place
         place = Place(
             title=place_data["title"],
             description=place_data.get("description"),

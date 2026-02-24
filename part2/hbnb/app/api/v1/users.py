@@ -39,3 +39,17 @@ class UserResource(Resource):
         if not user:
             return {'error': 'User not found'}, 404
         return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, "password":user.password}, 200
+    @api.expect(user_model)
+    @api.response(200, 'user updated successfully')
+    @api.response(404, 'user not found')
+    @api.response(400, 'Invalid input data')
+    def put(self, user_id):
+        place = facade.get_user(user_id)
+        if not place:
+             return {'error': 'user not found'}, 404
+        updated_data = api.payload
+        try:
+            facade.update_user(user_id, updated_data)
+        except ValueError as exc:
+            return {'error': str(exc)}, 400
+        return {"message": "user updated successfully"}, 200

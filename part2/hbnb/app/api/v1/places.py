@@ -124,4 +124,7 @@ class PlaceReviewList(Resource):
     def get(self, place_id):
         """Get all reviews for a specific place"""
         # Placeholder for logic to return a list of reviews for a place
-        pass
+        place = facade.get_place(place_id)
+        if not place:
+             return {'error': 'Place not found'}, 404
+        

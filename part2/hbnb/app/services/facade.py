@@ -49,7 +49,16 @@ class HBnBFacade:
         return user
     '''Gestion amenity'''
     def create_amenity(self, amenity_data):
-        amenity = Amenity(**amenity_data)
+        # Vérifier doublon
+        for amenity in self.amenity_repo.get_all():
+            if amenity.name == amenity_data["name"]:
+                raise ValueError("Amenity already registered")
+
+        # Créer amenities
+        amenity = Amenity(
+            name=amenity_data["name"],
+            description=amenity_data["description"],
+        )
         self.amenity_repo.add(amenity)
         return amenity
 
@@ -61,7 +70,17 @@ class HBnBFacade:
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
-        return self.amenity_repo.update(amenity_id, amenity_data)
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return None
+        # Update simple fields
+        if "name" in amenity_data:
+            amenity.name = amenity_data["name"]
+        if "description" in amenity_data:
+            amenity.description = amenity_data["description"]
+        amenity.save()
+        return amenity
+
     '''Gestion place'''
     def create_place(self, place_data):
     # Vérifier doublon

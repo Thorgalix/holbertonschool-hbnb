@@ -9,7 +9,18 @@ class HBnBFacade:
         self.place_repo = InMemoryRepository()
         '''Gestion USER'''
     def create_user(self, user_data):
-        user = User(**user_data)
+        # vérifier doublon
+        for user in self.user_repo.get_all():
+            if user.email == user_data["email"]:
+                raise ValueError("User already registered")
+        # Créer user
+        user = User(
+            first_name=user_data["first_name"],
+            last_name=user_data["last_name"],
+            email=user_data["email"],
+            password=user_data["password"],
+            user_id=user_data["user_id"]
+        )
         self.user_repo.add(user)
         return user
 

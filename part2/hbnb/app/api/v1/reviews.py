@@ -22,6 +22,7 @@ class ReviewList(Resource):
         try:
             review = facade.create_review(api.payload)
             return {
+                "id":review.id,
                 "comment": review.comment,
                 "rating": review.rating,
                 "user_id":review.user.id,

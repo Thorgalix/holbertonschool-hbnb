@@ -13,6 +13,14 @@ class Place(BaseClass):
         self.amenities = amenities     # Relations place / amenities
 
     @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = self.validate_title(value)
+
+    @property
     def price(self):
         return self._price
 
@@ -36,6 +44,13 @@ class Place(BaseClass):
     def longitude(self, value):
         self._longitude = self.validate_longitude(value)
 
+
+    def validate_title(self, title):
+        if title == "":
+            raise ValueError("Title should be not empty")
+        if len(title) > 50:
+            raise ValueError("Title must be maximum 50 characters long")
+        return title
 
     def validate_price(self, price):
         try:

@@ -23,10 +23,10 @@ class UserList(Resource):
             user = facade.create_user(api.payload)
             return {
                 "id": user.id,
-                "title": user.first_name,
-                "description": user.last_name,
-                "price": user.email,
-                "latitude": user.password,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "password": user.password,
             }, 201
         except ValueError as e:
             return {"error": str(e)}, 400

@@ -15,13 +15,22 @@ class Review(BaseClass):
 
 
     @property
+    def comment(self):
+        return self._comment
+    @comment.setter
+    def comment(self,value):
+        self._comment = self.validate_comment(value)
+    @property
     def rating(self):
         return self._rating
     @rating.setter
-
-
     def rating(self,value):
         self._rating = self.validate_rating(value)
+
+    def validate_comment(self, comment):
+        if comment == "":
+            raise ValueError("Comment should be not empty")
+        return comment
 
     def validate_rating(self, rating):
         try:

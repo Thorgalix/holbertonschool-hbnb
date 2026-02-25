@@ -210,4 +210,11 @@ class HBnBFacade:
         review = self.review_repo.get(review_id)
         if not review:
             return None
-        return self.review_repo.delete(review)
+
+        # Retirer la review des listes de l'utilisateur et du place
+        if review.user and review in review.user.reviews:
+            review.user.reviews.remove(review)
+        if review.place and review in review.place.reviews:
+            review.place.reviews.remove(review)
+
+        return self.review_repo.delete(review_id)

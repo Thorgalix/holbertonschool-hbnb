@@ -61,8 +61,7 @@ class HBnBFacade:
 
         # Créer amenities
         amenity = Amenity(
-            name=amenity_data["name"],
-            description=amenity_data["description"],
+            name=amenity_data["name"]
         )
         self.amenity_repo.add(amenity)
         return amenity
@@ -81,8 +80,6 @@ class HBnBFacade:
         # Update simple fields
         if "name" in amenity_data:
             amenity.name = amenity_data["name"]
-        if "description" in amenity_data:
-            amenity.description = amenity_data["description"]
         amenity.save()
         return amenity
 

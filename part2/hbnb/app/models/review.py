@@ -35,8 +35,8 @@ class Review(BaseClass):
     def validate_rating(self, rating):
         try:
             rating = int(rating)
-            if rating > 5 or rating < 0:
-                raise ValueError("Rating must be between 0 and 5")
+            if rating > 5 or rating < 1:
+                raise ValueError("Rating must be between 1 and 5")
             return rating
         except (TypeError, ValueError):
-            raise ValueError("Rating must be between 0 and 5")
+            raise ValueError("Rating must be between 1 and 5")

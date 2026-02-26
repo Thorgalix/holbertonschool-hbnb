@@ -5,9 +5,11 @@ api = Namespace('users', description='User operations')
 
 # Define the user model for input validation and documentation
 user_model = api.model('User', {
+    'user_id': fields.String(required=True, description='ID of the user'),
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
-    'email': fields.String(required=True, description='Email of the user')
+    'email': fields.String(required=True, description='Email of the user'),
+    'password': fields.String(required=True, description='Password of the user')
 })
 
 @api.route('/')
@@ -79,18 +81,4 @@ class UserResource(Resource):
 
         },200
 
-@api.route('/<email>')
-class UserEmailResource(Resource):
-    @api.response(200, 'Place details retrieved successfully')
-    @api.response(404, 'Place not found')
-    def get(self, email):
-        user_by_email = facade.get_user_by_email(email)
-        if not user_by_email:
-            return {"error": "Place not found"}, 404
-        return {
-                "id": user_by_email.id,
-                "first_name": user_by_email.first_name,
-                "last_name": user_by_email.last_name,
-                "email": user_by_email.email
-            },200
 

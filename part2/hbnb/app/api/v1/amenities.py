@@ -5,8 +5,7 @@ api = Namespace('amenities', description='Amenity operations')
 
 #Define the amenity model for input validation and documentation
 amenity_model = api.model('Amenity', {
-    'name': fields.String(required=True, description='Name of the amenity'),
-    'description': fields.String(description='Description of the amenity')  # facultatif
+    'name': fields.String(required=True, description='Name of the amenity')
 })
 
 @api.route('/')
@@ -20,8 +19,7 @@ class AmenityList(Resource):
             amenity = facade.create_amenity(api.payload)
             return {
                 "id": amenity.id,
-                "name": amenity.name,
-                "description": amenity.description,
+                "name": amenity.name
             }, 201
         except ValueError as e:
             return {"error": str(e)}, 400

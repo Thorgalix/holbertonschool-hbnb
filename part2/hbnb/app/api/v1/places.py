@@ -40,6 +40,7 @@ place_update_model = api.model('PlaceUpdate', {
     'price': fields.Float(description='Price per night'),
     'latitude': fields.Float(description='Latitude of the place'),
     'longitude': fields.Float(description='Longitude of the place'),
+    'owner_id': fields.String(required=True, description='ID of the owner'),
     'amenities': fields.List(fields.String, description="List of amenities ID's to add")
 })
 
@@ -98,7 +99,7 @@ class PlaceResource(Resource):
                 "email": place.owner.email
             },
             "amenities": [
-                {"id": a.id, "name": a.name, "description":a.description} for a in place.amenities
+                {"id": a.id, "name": a.name} for a in place.amenities
             ],
             "reviews": [
                 {"id": a.id, "comment": a.comment, "rating":a.rating} for a in place.reviews
@@ -129,7 +130,7 @@ class PlaceReviewList(Resource):
         # Placeholder for logic to return a list of reviews for a place
         reviews = facade.get_reviews_by_place(place_id)
         if not reviews:
-             return {'error': 'review not found'}, 404
+             return []
 
         return [{
             "id": reviews.id,

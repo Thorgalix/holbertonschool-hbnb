@@ -46,7 +46,7 @@ place_update_model = api.model('PlaceUpdate', {
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.expect(place_update_model)
+    @api.expect(place_update_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
@@ -102,7 +102,7 @@ class PlaceResource(Resource):
                 {"id": a.id, "name": a.name} for a in place.amenities
             ],
             "reviews": [
-                {"id": a.id, "comment": a.comment, "rating":a.rating} for a in place.reviews
+                {"id": a.id, "comment": a.text, "rating":a.rating} for a in place.reviews
             ]
         }, 200
 
@@ -134,7 +134,7 @@ class PlaceReviewList(Resource):
 
         return [{
             "id": reviews.id,
-            "comment": reviews.comment,
+            "comment": reviews.text,
             "rating": reviews.rating,
         } for reviews in reviews], 200
 

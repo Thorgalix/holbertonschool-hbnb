@@ -58,7 +58,7 @@ class User(BaseClass):
 		if email == "":
 			raise ValueError("Email should be not empty")
 		try:
-			validate_email(email)
+			validate_email(email, check_deliverability=False)
 		except EmailNotValidError:
 			raise ValueError("Invalid email format")
 		return email

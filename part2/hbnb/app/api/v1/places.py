@@ -98,7 +98,10 @@ class PlaceResource(Resource):
                 "email": place.owner.email
             },
             "amenities": [
-                {"id": a.id, "name": a.name} for a in place.amenities
+                {"id": a.id, "name": a.name, "description":a.description} for a in place.amenities
+            ],
+            "reviews": [
+                {"id": a.id, "comment": a.comment, "rating":a.rating} for a in place.reviews
             ]
         }, 200
 

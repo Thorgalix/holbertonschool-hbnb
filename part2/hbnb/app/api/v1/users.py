@@ -42,7 +42,7 @@ class UserList(Resource):
             } for a in users], 200
 @api.route('/<user_id>')
 class UserResource(Resource):
-    @api.response(200, 'User details retrieved successfully')
+
     @api.response(404, 'User not found')
     def get(self, user_id):
         """Get user details by ID"""
@@ -57,17 +57,40 @@ class UserResource(Resource):
             'password':user.password
             }, 200
 
+
     @api.expect(user_model)
     @api.response(200, 'user updated successfully')
     @api.response(404, 'user not found')
     @api.response(400, 'Invalid input data')
     def put(self, user_id):
-        place = facade.get_user(user_id)
-        if not place:
+        user = facade.get_user(user_id)
+        if not user:
              return {'error': 'user not found'}, 404
         updated_data = api.payload
         try:
             facade.update_user(user_id, updated_data)
         except ValueError as exc:
             return {'error': str(exc)}, 400
-        return {"message": "user updated successfully"}, 200
+        return {
+            "id": user.id,
+            "first_name":user.first_name,
+            "last_name":user.last_name,
+            "email":user.email
+
+        },200
+
+@api.route('/<email>')
+class UserEmailResource(Resource):
+    @api.response(200, 'Place details retrieved successfully')
+    @api.response(404, 'Place not found')
+    def get(self, email):
+        user_by_email = facade.get_user_by_email(email)
+        if not user_by_email:
+            return {"error": "Place not found"}, 404
+        return {
+                "id": user_by_email.id,
+                "first_name": user_by_email.first_name,
+                "last_name": user_by_email.last_name,
+                "email": user_by_email.email
+            },200
+

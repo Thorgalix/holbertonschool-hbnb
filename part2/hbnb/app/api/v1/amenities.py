@@ -19,9 +19,9 @@ class AmenityList(Resource):
         try:
             amenity = facade.create_amenity(api.payload)
             return {
+                "id": amenity.id,
                 "name": amenity.name,
                 "description": amenity.description,
-                "id": amenity.id
             }, 201
         except ValueError as e:
             return {"error": str(e)}, 400
@@ -41,8 +41,8 @@ class AmenityResource(Resource):
         if not amenity:
             return {'error': 'Amenity not found'}, 404
         return {
-            'name': amenity.name,
             'id': amenity.id,
+            'name': amenity.name,
             }, 200
 
     @api.expect(amenity_model)

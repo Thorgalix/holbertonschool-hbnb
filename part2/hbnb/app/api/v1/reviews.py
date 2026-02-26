@@ -5,7 +5,7 @@ api = Namespace('reviews', description='Review operations')
 
 # Define the review model for input validation and documentation
 review_model = api.model('Review', {
-    'comment': fields.String(required=True, description='comment of the review'),
+    'text': fields.String(required=True, description='text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
     'user_id': fields.String(required=True, description='ID of the user'),
     'place_id': fields.String(required=True, description='ID of the place')
@@ -23,7 +23,7 @@ class ReviewList(Resource):
             review = facade.create_review(api.payload)
             return {
                 "id":review.id,
-                "comment": review.comment,
+                "text": review.text,
                 "rating": review.rating,
                 "user_id":review.user.id,
                 "place_id":review.place.id
@@ -37,7 +37,7 @@ class ReviewList(Resource):
         reviews = facade.get_all_reviews()
         return [{
             'id': a.id,
-            'comment': a.comment,
+            'text': a.text,
             'rating': a.rating
         } for a in reviews
         ], 200
@@ -53,7 +53,7 @@ class ReviewResource(Resource):
             return {"error": "Review not found"}, 404
         return {
             "id":review.id,
-            "comment":review.comment,
+            "text":review.text,
             "rating":review.rating,
             "user_id":review.user.id,
             "place_id":review.place.id

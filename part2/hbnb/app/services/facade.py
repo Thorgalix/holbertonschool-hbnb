@@ -169,7 +169,7 @@ class HBnBFacade:
 
         review = Review(
             rating=review_data["rating"],
-            comment=review_data["comment"],
+            text=review_data["text"],
             user=user,
             place=place
         )
@@ -197,8 +197,8 @@ class HBnBFacade:
         #update simple fields
         if "rating" in review_data:
             review.rating = review_data["rating"]
-        if "comment" in review_data:
-            review.comment = review_data["comment"]
+        if "text" in review_data:
+            review.text = review_data["text"]
 
         review.save()
         return review

@@ -1,10 +1,10 @@
 from app.models.Base_Class import BaseClass
 
 class Review(BaseClass):
-    def __init__(self, rating, comment, user, place):
+    def __init__(self, rating, text, user, place):
         super().__init__()
         self.rating = rating
-        self.comment = comment
+        self.text = text
         self.user = user
         self.place = place
 
@@ -15,11 +15,11 @@ class Review(BaseClass):
 
 
     @property
-    def comment(self):
-        return self._comment
-    @comment.setter
-    def comment(self,value):
-        self._comment = self.validate_comment(value)
+    def text(self):
+        return self._text
+    @text.setter
+    def text(self,value):
+        self._text = self.validate_text(value)
     @property
     def rating(self):
         return self._rating
@@ -27,10 +27,10 @@ class Review(BaseClass):
     def rating(self,value):
         self._rating = self.validate_rating(value)
 
-    def validate_comment(self, comment):
-        if comment == "":
-            raise ValueError("Comment should be not empty")
-        return comment
+    def validate_text(self, text):
+        if text == "":
+            raise ValueError("Review should be not empty")
+        return text
 
     def validate_rating(self, rating):
         try:

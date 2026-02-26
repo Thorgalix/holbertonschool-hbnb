@@ -88,6 +88,3 @@ class Place(BaseClass):
     def add_amenity(self, amenity):
         self.amenities.append(amenity)
         amenity.places.append(self)
-
-    def calculate_rating(self):
-        pass

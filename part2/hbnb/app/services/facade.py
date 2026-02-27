@@ -14,7 +14,9 @@ class HBnBFacade:
         # vérifier doublon
         for user in self.user_repo.get_all():
             if user.email == user_data["email"]:
-                raise ValueError("User already registered")
+                raise ValueError("Email already registered")
+            if user.user_id == user_data["user_id"]:
+                raise ValueError("User_id already registered")
         # Créer user
         user = User(
             first_name=user_data["first_name"],
@@ -41,16 +43,17 @@ class HBnBFacade:
             return None
 
         #update simple fields
+        data = {}
         if "first_name" in user_data:
-            user.first_name = user_data["first_name"]
+            data["first_name"] = user_data["first_name"]
         if "last_name" in user_data:
-            user.last_name = user_data["last_name"]
+            data["last_name"] = user_data["last_name"]
         if "email" in user_data:
-            user.email = user_data["email"]
+            data["email"] = user_data["email"]
         if "password" in user_data:
-            user.password = user_data["password"]
+            data["password"] = user_data["password"]
 
-        user.save()
+        user.update(data)
         return user
     '''Gestion amenity'''
     def create_amenity(self, amenity_data):
@@ -78,9 +81,10 @@ class HBnBFacade:
         if not amenity:
             return None
         # Update simple fields
+        data = {}
         if "name" in amenity_data:
-            amenity.name = amenity_data["name"]
-        amenity.save()
+            data["name"] = amenity_data["name"]
+        amenity.update(data)
         return amenity
 
     '''Gestion place'''
@@ -195,12 +199,13 @@ class HBnBFacade:
         if not review:
             return None
         #update simple fields
+        data = {}
         if "rating" in review_data:
-            review.rating = review_data["rating"]
+            data["rating"] = review_data["rating"]
         if "text" in review_data:
-            review.text = review_data["text"]
+            data["text"] = review_data["text"]
 
-        review.save()
+        review.update(data)
         return review
 
     def delete_review(self, review_id):

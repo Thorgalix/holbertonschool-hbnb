@@ -25,6 +25,8 @@ class HBnBFacade:
             password=user_data["password"],
             user_id=user_data["user_id"]
         )
+        # Hacher le mot de passe avant stockage
+        user.hash_password(user_data["password"])
         self.user_repo.add(user)
         return user
 

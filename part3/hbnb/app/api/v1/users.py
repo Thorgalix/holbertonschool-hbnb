@@ -23,12 +23,9 @@ class UserList(Resource):
         """Register a new user"""
         try:
             user = facade.create_user(api.payload)
-            user.hash_password
             return {
                 "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
+                "Message": "User successfully created"
             }, 201
         except ValueError as e:
             return {"error": str(e)}, 400

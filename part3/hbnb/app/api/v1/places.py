@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required
 from app.services import facade
 
 api = Namespace('places', description='Place operations')
@@ -49,6 +50,7 @@ class PlaceList(Resource):
     @api.expect(place_update_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def post(self):
         """Register a new place"""
         try:
@@ -110,6 +112,7 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, place_id):
         place = facade.get_place(place_id)
         if not place:

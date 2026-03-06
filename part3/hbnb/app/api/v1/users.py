@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import facade
 
 api = Namespace('users', description='User operations')
@@ -18,7 +19,6 @@ class UserList(Resource):
     @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered')
     @api.response(400, 'Invalid input data')
-
     def post(self):
         """Register a new user"""
         try:
@@ -29,6 +29,7 @@ class UserList(Resource):
             }, 201
         except ValueError as e:
             return {"error": str(e)}, 400
+
     @api.response(200, 'List users retrieved successfully')
     def get(self):
         """Retrieve a list of all users"""
@@ -60,7 +61,9 @@ class UserResource(Resource):
     @api.response(200, 'user updated successfully')
     @api.response(404, 'user not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, user_id):
+
         user = facade.get_user(user_id)
         if not user:
              return {'error': 'user not found'}, 404
@@ -74,7 +77,6 @@ class UserResource(Resource):
             "first_name":user.first_name,
             "last_name":user.last_name,
             "email":user.email
-
         },200
 
 

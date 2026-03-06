@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import facade
+
 
 api = Namespace('places', description='Place operations')
 
@@ -53,6 +54,9 @@ class PlaceList(Resource):
     @jwt_required()
     def post(self):
         """Register a new place"""
+        current_user_id = get_jwt_identity()
+        data = api.payload
+        data['owner_id'] = current_user_id  # forcer le propriétaire sur le user connecté
         try:
             place = facade.create_place(api.payload)
             return {
@@ -114,15 +118,25 @@ class PlaceResource(Resource):
     @api.response(400, 'Invalid input data')
     @jwt_required()
     def put(self, place_id):
+        """Update a place (only owner can update)"""
+        current_user_id = get_jwt_identity()
         place = facade.get_place(place_id)
         if not place:
-             return {'error': 'Place not found'}, 404
-        updated_data = api.payload
+            return {"error": "Place not found"}, 404
+        if place.owner.id != current_user_id:
+            return {'error': 'Unauthorized action'}, 403
         try:
-            facade.update_place(place_id, updated_data)
+            updated_place = facade.update_place(place_id, api.payload)
+            return {
+                "id": updated_place.id,
+                "title": updated_place.title,
+                "description": updated_place.description,
+                "price": updated_place.price,
+                "latitude": updated_place.latitude,
+                "longitude": updated_place.longitude
+            }, 200
         except ValueError as exc:
-            return {'error': str(exc)}, 400
-        return {"message": "Place updated successfully"}, 200
+            return {"error": str(exc)}, 400
 
 @api.route('/<place_id>/reviews')
 class PlaceReviewList(Resource):

@@ -222,3 +222,10 @@ class HBnBFacade:
             review.place.reviews.remove(review)
 
         return self.review_repo.delete(review_id)
+
+    def user_already_reviewed_place(self, user_id, place_id):
+        """Check if a user has already reviewed a specific place"""
+        for review in self.review_repo.get_all():
+            if review.user.id == user_id and review.place.id == place_id:
+                return True
+        return False

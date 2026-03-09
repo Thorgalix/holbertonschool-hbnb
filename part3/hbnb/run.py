@@ -1,6 +1,9 @@
 from app import create_app
 from app.services import facade
+
 app = create_app()
+
+
 def create_admin():
     admin = facade.get_user_by_email("admin@hbnb.com")
 
@@ -17,5 +20,6 @@ def create_admin():
         print("Admin user created")
 
 if __name__ == '__main__':
-    create_admin()
+    with app.app_context():
+        create_admin()
     app.run(debug=True)

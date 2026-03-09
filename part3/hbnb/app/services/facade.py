@@ -1,18 +1,20 @@
-from app.persistence.repository import InMemoryRepository
+from app.persistence.repository import SQLAlchemyRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
 from app.models.review import Review
+
+
 class HBnBFacade:
     def __init__(self):
-        self.user_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
+        self.user_repository = SQLAlchemyRepository(User)  # Switched to SQLAlchemyRepository
+        self.place_repository = SQLAlchemyRepository(Place)
+        self.review_repository = SQLAlchemyRepository(Review)
+        self.amenity_repository = SQLAlchemyRepository(Amenity)
         '''Gestion USER'''
     def create_user(self, user_data):
         # vérifier doublon
-        for user in self.user_repo.get_all():
+        for user in self.user_repository.get_all():
             if user.email == user_data["email"]:
                 raise ValueError("Email already registered")
             #if user.user_id == user_data["user_id"]:
@@ -27,20 +29,20 @@ class HBnBFacade:
         )
         # Hacher le mot de passe avant stockage
         user.hash_password(user_data["password"])
-        self.user_repo.add(user)
+        self.user_repository.add(user)
         return user
 
     def get_user(self, user_id):
-        return self.user_repo.get(user_id)
+        return self.user_repository.get(user_id)
 
     def get_all_users(self):
-        return self.user_repo.get_all()
+        return self.user_repository.get_all()
 
     def get_user_by_email(self, email):
-        return self.user_repo.get_by_attribute('email', email)
+        return self.user_repository.get_by_attribute('email', email)
 
     def update_user(self, user_id, user_data):
-        user = self.user_repo.get(user_id)
+        user = self.user_repository.get(user_id)
         if not user:
             return None
 
@@ -60,7 +62,7 @@ class HBnBFacade:
     '''Gestion amenity'''
     def create_amenity(self, amenity_data):
         # Vérifier doublon
-        for amenity in self.amenity_repo.get_all():
+        for amenity in self.amenity_repository.get_all():
             if amenity.name == amenity_data["name"]:
                 raise ValueError("Amenity already registered")
 
@@ -68,18 +70,18 @@ class HBnBFacade:
         amenity = Amenity(
             name=amenity_data["name"]
         )
-        self.amenity_repo.add(amenity)
+        self.amenity_repository.add(amenity)
         return amenity
 
 
     def get_amenity(self, amenity_id):
-        return self.amenity_repo.get(amenity_id)
+        return self.amenity_repository.get(amenity_id)
 
     def get_all_amenities(self):
-        return self.amenity_repo.get_all()
+        return self.review_repository.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
-        amenity = self.amenity_repo.get(amenity_id)
+        amenity = self.review_repository.get(amenity_id)
         if not amenity:
             return None
         # Update simple fields
@@ -92,19 +94,19 @@ class HBnBFacade:
     '''Gestion place'''
     def create_place(self, place_data):
     # Vérifier doublon
-        for place in self.place_repo.get_all():
+        for place in self.place_repository.get_all():
             if place.title == place_data["title"]:
                 raise ValueError("Place already registered")
 
     # Vérifier owner
-        owner = self.user_repo.get(place_data["owner_id"])
+        owner = self.user_repository.get(place_data["owner_id"])
         if not owner:
             raise ValueError("Owner not found")
 
     # Vérifier amenities
         amenities = []
         for amenity_id in place_data.get("amenities", []):
-            amenity = self.amenity_repo.get(amenity_id)
+            amenity = self.review_repository.get(amenity_id)
             if not amenity:
                 raise ValueError(f"Amenity {amenity_id} not found")
             amenities.append(amenity)
@@ -120,17 +122,17 @@ class HBnBFacade:
             amenities=amenities
         )
 
-        self.place_repo.add(place)
+        self.place_repository.add(place)
         return place
 
     def get_place(self, place_id):
-        return self.place_repo.get(place_id)
+        return self.place_repository.get(place_id)
 
     def get_all_places(self):
-        return self.place_repo.get_all()
+        return self.place_repository.get_all()
 
     def update_place(self, place_id, place_data):
-        place = self.place_repo.get(place_id)
+        place = self.place_repository.get(place_id)
         if not place:
             return None
 
@@ -149,7 +151,7 @@ class HBnBFacade:
         # Update amenities (ajout sans remplacer)
         if "amenities" in place_data:
             for amenity_id in place_data.get("amenities", []):
-                amenity = self.amenity_repo.get(amenity_id)
+                amenity = self.review_repository.get(amenity_id)
                 if not amenity:
                     raise ValueError(f"Amenity {amenity_id} not found")
                 if amenity not in place.amenities:
@@ -161,7 +163,7 @@ class HBnBFacade:
         return place
 
     def delete_place(self, place_id):
-        place = self.place_repo.get(place_id)
+        place = self.place_repository.get(place_id)
         if not place:
             return None
 
@@ -176,18 +178,18 @@ class HBnBFacade:
         for review in list(place.reviews):
             self.delete_review(review.id)
 
-        return self.place_repo.delete(place_id)
+        return self.place_repository.delete(place_id)
 
 
     '''Gestion Review'''
     def create_review(self, review_data):
 
         # Vérifier user
-        user = self.user_repo.get(review_data["user_id"])
+        user = self.user_repository.get(review_data["user_id"])
         if not user:
             raise ValueError("Owner not found")
         # Vérifier place
-        place = self.place_repo.get(review_data["place_id"])
+        place = self.place_repository.get(review_data["place_id"])
         if not place:
             raise ValueError("Place not found")
 
@@ -197,25 +199,25 @@ class HBnBFacade:
             user=user,
             place=place
         )
-        self.review_repo.add(review)
+        self.review_repository.add(review)
         return review
 
 
 
     def get_review(self, review_id):
-        return self.review_repo.get(review_id)
+        return self.review_repository.get(review_id)
 
     def get_all_reviews(self):
-        return self.review_repo.get_all()
+        return self.review_repository.get_all()
 
     def get_reviews_by_place(self, place_id):
         return [
-        review for review in self.review_repo.get_all()
+        review for review in self.review_repository.get_all()
         if review.place.id == place_id
         ]
 
     def update_review(self, review_id, review_data):
-        review = self.review_repo.get(review_id)
+        review = self.review_repository.get(review_id)
         if not review:
             return None
         #update simple fields
@@ -229,7 +231,7 @@ class HBnBFacade:
         return review
 
     def delete_review(self, review_id):
-        review = self.review_repo.get(review_id)
+        review = self.review_repository.get(review_id)
         if not review:
             return None
 
@@ -239,11 +241,11 @@ class HBnBFacade:
         if review.place and review in review.place.reviews:
             review.place.reviews.remove(review)
 
-        return self.review_repo.delete(review_id)
+        return self.review_repository.delete(review_id)
 
     def user_already_reviewed_place(self, user_id, place_id):
         """Check if a user has already reviewed a specific place"""
-        for review in self.review_repo.get_all():
+        for review in self.review_repository.get_all():
             if review.user.id == user_id and review.place.id == place_id:
                 return True
         return False

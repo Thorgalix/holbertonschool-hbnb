@@ -15,15 +15,15 @@ class HBnBFacade:
         for user in self.user_repo.get_all():
             if user.email == user_data["email"]:
                 raise ValueError("Email already registered")
-            if user.user_id == user_data["user_id"]:
-                raise ValueError("User_id already registered")
+            #if user.user_id == user_data["user_id"]:
+                #raise ValueError("User_id already registered")
         # Créer user
         user = User(
             first_name=user_data["first_name"],
             last_name=user_data["last_name"],
             email=user_data["email"],
             password=user_data["password"],
-            user_id=user_data["user_id"]
+            is_admin=user_data.get("is_admin", False)
         )
         # Hacher le mot de passe avant stockage
         user.hash_password(user_data["password"])

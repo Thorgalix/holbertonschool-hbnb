@@ -7,7 +7,7 @@ api = Namespace('users', description='User operations')
 
 # Define the user model for input validation and documentation
 user_model = api.model('User', {
-    'user_id': fields.String(required=True, description='ID of the user'),
+    #'user_id': fields.String(required=True, description='ID of the user'),
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user'),
@@ -15,23 +15,6 @@ user_model = api.model('User', {
 })
 
 @api.route('/')
-class AdminUserCreate(Resource):
-    @jwt_required()
-    def post(self):
-        current_user = get_jwt_identity()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        user_data = request.json
-        email = user_data.get('email')
-
-        # Check if email is already in use
-        if facade.get_user_by_email(email):
-            return {'error': 'Email already registered'}, 400
-
-        UserList(self.post) ## Création de l'utilisateur
-
-
 class UserList(Resource):
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
@@ -48,6 +31,31 @@ class UserList(Resource):
         except ValueError as e:
             return {"error": str(e)}, 400
 
+class AdminUserCreate(Resource):
+    @jwt_required()
+    def post(self):
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        user_data = request.json
+        email = user_data.get('email')
+
+        # Check if email is already in use
+        if facade.get_user_by_email(email):
+            return {'error': 'Email already registered'}, 400
+
+        """Register a new user"""
+        try:
+            user = facade.create_user(api.payload)
+            return {
+                "id": user.id,
+                "Message": "User successfully created"
+            }, 201
+        except ValueError as e:
+            return {"error": str(e)}, 400
+
+
     @api.response(200, 'List users retrieved successfully')
     def get(self):
         """Retrieve a list of all users"""
@@ -60,26 +68,6 @@ class UserList(Resource):
             } for a in users], 200
 
 @api.route('/<user_id>')
-class AdminUserModify(Resource):
-    @jwt_required()
-    def put(self, user_id):
-        current_user = get_jwt()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        data = request.json
-        email = data.get('email')
-
-        # Ensure email uniqueness
-        if email:
-            existing_user = facade.get_user_by_email(email)
-            if existing_user and existing_user.id != user_id:
-                return {'error': 'Email already in use'}, 400
-
-        # Logic to update user details
-        UserResource(self.put) ## Update user
-
-
 class UserResource(Resource):
     @api.response(404, 'User not found')
     def get(self, user_id):
@@ -127,4 +115,39 @@ class UserResource(Resource):
             "email": user.email
         }, 200
 
+class AdminUserModify(Resource):
+    @jwt_required()
+    def put(self, user_id):
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        data = request.json
+        email = data.get('email')
+
+        # Ensure email uniqueness
+        if email:
+            existing_user = facade.get_user_by_email(email)
+            if existing_user and existing_user.id != user_id:
+                return {'error': 'Email already in use'}, 400
+
+        # Logic to update user details
+        updated_data = api.payload
+
+        # Empêche la modification de l'email et du mot de passe
+        if 'email' in updated_data or 'password' in updated_data:
+            return {'error': 'You cannot modify email or password'}, 400
+
+        user = facade.get_user(user_id)
+        try:
+            facade.update_user(user_id, updated_data)
+        except ValueError as exc:
+            return {'error': str(exc)}, 400
+
+        return {
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email
+        }, 200
 

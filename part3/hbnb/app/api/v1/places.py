@@ -83,22 +83,6 @@ class PlaceList(Resource):
             } for a in places], 200
 
 @api.route('/<place_id>')
-class AdminPlaceModify(Resource):
-    @jwt_required()
-    def put(self, place_id):
-        current_user = get_jwt()
-
-        # Set is_admin default to False if not exists
-        is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
-
-        place = facade.get_place(place_id)
-        if not is_admin and place.owner_id != user_id:
-            return {'error': 'Unauthorized action'}, 403
-
-        # Logic to update the place
-        PlaceResource(self.put)
-
 class PlaceResource(Resource):
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
@@ -140,6 +124,36 @@ class PlaceResource(Resource):
             return {"error": "Place not found"}, 404
         if place.owner.id != current_user_id:
             return {'error': 'Unauthorized action'}, 403
+        try:
+            updated_place = facade.update_place(place_id, api.payload)
+            return {
+                "id": updated_place.id,
+                "title": updated_place.title,
+                "description": updated_place.description,
+                "price": updated_place.price,
+                "latitude": updated_place.latitude,
+                "longitude": updated_place.longitude
+            }, 200
+        except ValueError as exc:
+            return {"error": str(exc)}, 400
+
+class AdminPlaceModify(Resource):
+    @jwt_required()
+    def put(self, place_id):
+        current_user = get_jwt()
+
+        # Set is_admin default to False if not exists
+        is_admin = current_user.get('is_admin', False)
+        user_id = current_user.get('id')
+
+        place = facade.get_place(place_id)
+        if not is_admin and place.owner_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        # Logic to update the place
+        place = facade.get_place(place_id)
+        if not place:
+            return {"error": "Place not found"}, 404
         try:
             updated_place = facade.update_place(place_id, api.payload)
             return {

@@ -6,15 +6,16 @@ def create_admin():
 
     if not admin:
         admin_data = {
-            "email": "admin@hbnb.io",
+            "email": "admin@hbnb.com",
             "first_name": "Admin",
             "last_name": "HBnB",
-            "password": "admin123",
-            "is_admin": True
+            "password": "admin/12345",
+            "is_admin": True,
         }
 
         facade.create_user(admin_data)
         print("Admin user created")
 
 if __name__ == '__main__':
+    create_admin()
     app.run(debug=True)

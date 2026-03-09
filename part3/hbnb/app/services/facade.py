@@ -53,7 +53,7 @@ class HBnBFacade:
         if "email" in user_data:
             data["email"] = user_data["email"]
         if "password" in user_data:
-            data["password"] = user_data["password"]
+            user.hash_password(user_data["password"])
 
         user.update(data)
         return user
@@ -159,6 +159,24 @@ class HBnBFacade:
 
         place.save()
         return place
+
+    def delete_place(self, place_id):
+        place = self.place_repo.get(place_id)
+        if not place:
+            return None
+
+        # Keep relations consistent before deleting the place.
+        if place.owner and place in place.owner.places:
+            place.owner.places.remove(place)
+
+        for amenity in place.amenities:
+            if place in amenity.places:
+                amenity.places.remove(place)
+
+        for review in list(place.reviews):
+            self.delete_review(review.id)
+
+        return self.place_repo.delete(place_id)
 
 
     '''Gestion Review'''

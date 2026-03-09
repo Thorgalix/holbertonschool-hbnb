@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity , get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
 
@@ -23,17 +23,14 @@ review_model = api.model('PlaceReview', {
     'rating': fields.Integer(description='Rating of the place (1-5)'),
     'user_id': fields.String(description='ID of the user')
 })
-# Define the place model for input validation and documentation
-place_model = api.model('Place', {
+place_create_model = api.model('PlaceCreate', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
     'owner_id': fields.String(required=True, description='ID of the owner'),
-    'owner': fields.Nested(user_model, description='Owner of the place'),
-    'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
-    'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
+    'amenities': fields.List(fields.String, description="List of amenities ID's to add")
 })
 
 place_update_model = api.model('PlaceUpdate', {
@@ -42,13 +39,12 @@ place_update_model = api.model('PlaceUpdate', {
     'price': fields.Float(description='Price per night'),
     'latitude': fields.Float(description='Latitude of the place'),
     'longitude': fields.Float(description='Longitude of the place'),
-    'owner_id': fields.String(required=True, description='ID of the owner'),
     'amenities': fields.List(fields.String, description="List of amenities ID's to add")
 })
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.expect(place_update_model, validate=True)
+    @api.expect(place_create_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     @jwt_required()
@@ -58,7 +54,7 @@ class PlaceList(Resource):
         data = api.payload
         data['owner_id'] = current_user_id  # forcer le propriétaire sur le user connecté
         try:
-            place = facade.create_place(api.payload)
+            place = facade.create_place(data)
             return {
                 "id": place.id,
                 "title": place.title,
@@ -111,49 +107,24 @@ class PlaceResource(Resource):
             ]
         }, 200
 
-    @api.expect(place_model)
+    @api.expect(place_update_model, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     @jwt_required()
     def put(self, place_id):
-        """Update a place (only owner can update)"""
-        current_user_id = get_jwt_identity()
-        place = facade.get_place(place_id)
-        if not place:
-            return {"error": "Place not found"}, 404
-        if place.owner.id != current_user_id:
-            return {'error': 'Unauthorized action'}, 403
-        try:
-            updated_place = facade.update_place(place_id, api.payload)
-            return {
-                "id": updated_place.id,
-                "title": updated_place.title,
-                "description": updated_place.description,
-                "price": updated_place.price,
-                "latitude": updated_place.latitude,
-                "longitude": updated_place.longitude
-            }, 200
-        except ValueError as exc:
-            return {"error": str(exc)}, 400
-
-class AdminPlaceModify(Resource):
-    @jwt_required()
-    def put(self, place_id):
+        """Update a place (owner or admin)"""
         current_user = get_jwt()
-
-        # Set is_admin default to False if not exists
         is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
+        current_user_id = get_jwt_identity()
 
-        place = facade.get_place(place_id)
-        if not is_admin and place.owner_id != user_id:
-            return {'error': 'Unauthorized action'}, 403
-
-        # Logic to update the place
         place = facade.get_place(place_id)
         if not place:
             return {"error": "Place not found"}, 404
+
+        if not is_admin and place.owner.id != current_user_id:
+            return {'error': 'Unauthorized action'}, 403
+
         try:
             updated_place = facade.update_place(place_id, api.payload)
             return {
@@ -166,6 +137,25 @@ class AdminPlaceModify(Resource):
             }, 200
         except ValueError as exc:
             return {"error": str(exc)}, 400
+
+    @api.response(200, 'Place deleted successfully')
+    @api.response(404, 'Place not found')
+    @jwt_required()
+    def delete(self, place_id):
+        """Delete a place (owner or admin)"""
+        current_user = get_jwt()
+        is_admin = current_user.get('is_admin', False)
+        current_user_id = get_jwt_identity()
+
+        place = facade.get_place(place_id)
+        if not place:
+            return {"error": "Place not found"}, 404
+
+        if not is_admin and place.owner.id != current_user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        facade.delete_place(place_id)
+        return {"message": "Place deleted successfully"}, 200
 
 @api.route('/<place_id>/reviews')
 class PlaceReviewList(Resource):
@@ -173,16 +163,19 @@ class PlaceReviewList(Resource):
     @api.response(404, 'Place not found')
     def get(self, place_id):
         """Get all reviews for a specific place"""
-        # Placeholder for logic to return a list of reviews for a place
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+
         reviews = facade.get_reviews_by_place(place_id)
         if not reviews:
-             return []
+            return [], 200
 
         return [{
-            "id": reviews.id,
-            "comment": reviews.text,
-            "rating": reviews.rating,
-        } for reviews in reviews], 200
+            "id": review.id,
+            "comment": review.text,
+            "rating": review.rating,
+        } for review in reviews], 200
 
 
 

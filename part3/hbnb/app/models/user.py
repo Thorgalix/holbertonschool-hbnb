@@ -1,7 +1,7 @@
 from app.models.Base_Class import BaseClass
 from email_validator import validate_email, EmailNotValidError
 from flask_bcrypt import Bcrypt
-
+from app.services import facade
 bcrypt = Bcrypt()
 
 class User(BaseClass):

@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
+from flask import request
 
 api = Namespace('users', description='User operations')
 
@@ -14,6 +15,23 @@ user_model = api.model('User', {
 })
 
 @api.route('/')
+class AdminUserCreate(Resource):
+    @jwt_required()
+    def post(self):
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        user_data = request.json
+        email = user_data.get('email')
+
+        # Check if email is already in use
+        if facade.get_user_by_email(email):
+            return {'error': 'Email already registered'}, 400
+
+        UserList(self.post) ## Création de l'utilisateur
+
+
 class UserList(Resource):
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
@@ -40,9 +58,29 @@ class UserList(Resource):
             'last_name': a.last_name,
             'email': a.email
             } for a in users], 200
-@api.route('/<user_id>')
-class UserResource(Resource):
 
+@api.route('/<user_id>')
+class AdminUserModify(Resource):
+    @jwt_required()
+    def put(self, user_id):
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        data = request.json
+        email = data.get('email')
+
+        # Ensure email uniqueness
+        if email:
+            existing_user = facade.get_user_by_email(email)
+            if existing_user and existing_user.id != user_id:
+                return {'error': 'Email already in use'}, 400
+
+        # Logic to update user details
+        UserResource(self.put) ## Update user
+
+
+class UserResource(Resource):
     @api.response(404, 'User not found')
     def get(self, user_id):
         """Get user details by ID"""

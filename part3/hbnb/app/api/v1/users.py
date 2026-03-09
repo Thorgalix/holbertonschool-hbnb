@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, verify_jwt_in_request
+from jwt.exceptions import PyJWTError
 from app.services import facade
 
 api = Namespace('users', description='User operations')
@@ -26,19 +27,31 @@ class UserList(Resource):
     @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered')
     @api.response(403, 'Admin privileges required')
-    @jwt_required()
     def post(self):
-        """Admin: create a new user"""
-        current_user = get_jwt()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
+        """Create a new user (public registration or admin creation)"""
+        # Check if user is authenticated
+        is_admin = False
+        try:
+            verify_jwt_in_request()
+            current_user = get_jwt()
+            is_admin = current_user.get('is_admin', False)
+        except Exception:
+            # No authentication or invalid token - public registration
+            pass
 
         email = api.payload.get('email')
         if facade.get_user_by_email(email):
             return {'error': 'Email already registered'}, 400
 
+        # Prepare user data
+        user_data = api.payload.copy()
+
+        # If not admin, remove is_admin from payload and it will default to False
+        if not is_admin:
+            user_data.pop('is_admin', None)  # Remove is_admin field completely
+
         try:
-            user = facade.create_user(api.payload)
+            user = facade.create_user(user_data)
             return {
                 "id": user.id,
                 "Message": "User successfully created"

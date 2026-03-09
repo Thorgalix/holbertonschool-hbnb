@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required , get_jwt_identity
+from flask_jwt_extended import jwt_required , get_jwt_identity , get_jwt
 from app.services import facade
 
 api = Namespace('reviews', description='Review operations')
@@ -99,6 +99,24 @@ class ReviewResource(Resource):
         except ValueError as exc:
             return {'error': str(exc)}, 400
 
+class AdminReviewModify(Resource):
+    @jwt_required()
+    def put(self, review_id):
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        # Logic to update an amenity
+        amenity  = facade.get_amenity(review_id)
+        if not amenity:
+            return {'error': 'Amenity not found'}, 404
+        updated_data = api.payload
+        try:
+            facade.update_review(review_id, updated_data)
+        except ValueError as exc:
+            return {'error': str(exc)},400
+        return {"message": "Review updated successfully"}, 200
+
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
@@ -112,6 +130,25 @@ class ReviewResource(Resource):
 
         if review.user.id != current_user_id:
             return {'error': 'Unauthorized action'}, 403
+
+        try:
+            facade.delete_review(review_id)
+            return {"message": "Review deleted successfully"}, 200
+        except ValueError as exc:
+            return {'error': str(exc)}, 400
+
+class AdminReviewDelete(Resource):
+    @jwt_required
+    def delete(self, review_id):
+        """Delete a review (only creator can delete)"""
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        # Delete review
+        review = facade.get_review(review_id)
+        if not review:
+            return {'error': 'Review not found'}, 404
 
         try:
             facade.delete_review(review_id)

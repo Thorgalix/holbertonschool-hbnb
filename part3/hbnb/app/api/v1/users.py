@@ -134,9 +134,6 @@ class AdminUserModify(Resource):
         # Logic to update user details
         updated_data = api.payload
 
-        # Empêche la modification de l'email et du mot de passe
-        if 'email' in updated_data or 'password' in updated_data:
-            return {'error': 'You cannot modify email or password'}, 400
 
         user = facade.get_user(user_id)
         try:

@@ -79,8 +79,7 @@ class PlaceList(Resource):
         return [{
             'id': a.id,
             'title': a.title,
-            'latitude': a.latitude,
-            'longitude': a.longitude
+            'price': a.price
             } for a in places], 200
 
 @api.route('/<place_id>')

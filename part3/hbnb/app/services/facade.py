@@ -84,10 +84,10 @@ class HBnBFacade:
         return self.amenity_repository.get(amenity_id)
 
     def get_all_amenities(self):
-        return self.review_repository.get_all()
+        return self.amenity_repository.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
-        amenity = self.review_repository.get(amenity_id)
+        amenity = self.amenity_repository.get(amenity_id)
         if not amenity:
             return None
         # Update simple fields

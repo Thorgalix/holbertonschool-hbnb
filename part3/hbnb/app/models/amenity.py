@@ -7,7 +7,7 @@ class Amenity(BaseClass):
     name = db.Column(db.String, nullable=False)
 
     @validates('name')
-    def validate_name(self, name):
+    def validate_name(self, key, name):
         if name == "":
             raise ValueError("Name should be not empty")
         if len(name) > 50:

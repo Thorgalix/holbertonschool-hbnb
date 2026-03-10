@@ -8,7 +8,7 @@ class Review(BaseClass):
     text = db.Column(db.String(100), nullable=False)
 
     @validates('text')
-    def validate_text(self, text):
+    def validate_text(self, key, text):
         if text == "":
             raise ValueError("Review should be not empty")
         return text
@@ -16,7 +16,7 @@ class Review(BaseClass):
 
 
     @validates('rating')
-    def validate_rating(self, rating):
+    def validate_rating(self, key, rating):
         try:
             rating = int(rating)
             if rating > 5 or rating < 1:

@@ -11,7 +11,7 @@ class Place(BaseClass):
     longitude = db.Column(db.Float, nullable=False)
 
     @validates('title')
-    def validate_title(self, title):
+    def validate_title(self, key, title):
         if title == "":
             raise ValueError("Title should be not empty")
         if len(title) > 50:
@@ -19,7 +19,7 @@ class Place(BaseClass):
         return title
 
     @validates('price')
-    def validate_price(self, price):
+    def validate_price(self, key, price):
         try:
             price = float(price)
             if price < 0:
@@ -30,7 +30,7 @@ class Place(BaseClass):
 
 
     @validates('latitude')
-    def validate_latitude(self, latitude):
+    def validate_latitude(self, key, latitude):
         try:
             latitude = float(latitude)
             if latitude < -90 or latitude > 90:
@@ -42,7 +42,7 @@ class Place(BaseClass):
 
 
     @validates('longitude')
-    def validate_longitude(self, longitude):
+    def validate_longitude(self, key, longitude):
         try:
             longitude = float(longitude)
             if longitude < -180 or longitude > 180:

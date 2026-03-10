@@ -12,6 +12,9 @@ class User(BaseClass):
     password = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
+    places = db.relationship('Place', backref='owner', lazy=True)
+    Reviews = db.relationship('Review', backref='owner', lazy=True)
+
     @validates('first_name')
     def validate_first_name(self, key, first_name):
         if first_name == "":

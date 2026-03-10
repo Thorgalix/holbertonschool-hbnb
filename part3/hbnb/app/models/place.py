@@ -10,6 +10,9 @@ class Place(BaseClass):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
 
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    Reviews = db.relationship('Review', backref='owner', lazy=True)
+
     @validates('title')
     def validate_title(self, key, title):
         if title == "":

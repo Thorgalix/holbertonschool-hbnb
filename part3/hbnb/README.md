@@ -131,6 +131,6 @@ Sequence diagram - Fetching list of places:
 
 Authors
 -------
-Mahmoud Bouate
-Lucas Podevin
-Holberton School - HBnB Project
+- Mahmoud Bouate
+- Lucas Podevin
+- Holberton School - HBnB Project

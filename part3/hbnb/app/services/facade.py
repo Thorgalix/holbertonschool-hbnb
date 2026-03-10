@@ -1,5 +1,10 @@
 from app.persistence.repository import SQLAlchemyRepository
 from app.persistence.repositories.user_repository import UserRepository
+from app.persistence.repositories.place_repository import PlaceRepository
+from app.persistence.repositories.review_repository import ReviewRepository
+from app.persistence.repositories.amenity_repository import AmenityRepository
+
+
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
@@ -9,9 +14,9 @@ from app.models.review import Review
 class HBnBFacade:
     def __init__(self):
         self.user_repository = UserRepository()  # Switched to SQLAlchemyRepository
-        self.place_repository = SQLAlchemyRepository(Place)
-        self.review_repository = SQLAlchemyRepository(Review)
-        self.amenity_repository = SQLAlchemyRepository(Amenity)
+        self.place_repository = PlaceRepository() # Switched to SQLAlchemyRepository
+        self.review_repository = ReviewRepository() # Switched to SQLAlchemyRepository
+        self.amenity_repository = AmenityRepository() # Switched to SQLAlchemyRepository
         '''Gestion USER'''
     def create_user(self, user_data):
         # vérifier doublon
@@ -89,7 +94,7 @@ class HBnBFacade:
         data = {}
         if "name" in amenity_data:
             data["name"] = amenity_data["name"]
-        amenity.update(data)
+        self.amenity_repository.update(amenity.id, data)
         return amenity
 
     '''Gestion place'''
@@ -138,16 +143,17 @@ class HBnBFacade:
             return None
 
         # Update simple fields
+        data = {}
         if "title" in place_data:
-            place.title = place_data["title"]
+            data["title"] = place_data["title"]
         if "description" in place_data:
-            place.description = place_data["description"]
+            data["description"] = place_data["description"]
         if "price" in place_data:
-            place.price = place_data["price"]
+            data["price"] = place_data["price"]
         if "latitude" in place_data:
-            place.latitude = place_data["latitude"]
+            data["latitude"] = place_data["latitude"]
         if "longitude" in place_data:
-            place.longitude = place_data["longitude"]
+            data["longitude"] = place_data["longitude"]
 
         # Update amenities (ajout sans remplacer)
         if "amenities" in place_data:
@@ -160,7 +166,7 @@ class HBnBFacade:
                 if place not in amenity.places:
                     amenity.places.append(place)
 
-        place.save()
+        self.place_repository.update(place.id, data)
         return place
 
     def delete_place(self, place_id):
@@ -228,7 +234,7 @@ class HBnBFacade:
         if "text" in review_data:
             data["text"] = review_data["text"]
 
-        review.update(data)
+        self.review_repository.update(review.id, data)
         return review
 
     def delete_review(self, review_id):

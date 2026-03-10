@@ -1,19 +1,12 @@
 from app.models.Base_Class import BaseClass
+from app import db
+from sqlalchemy.orm import validates
 
 class Amenity(BaseClass):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-        self.places = []
+    __tablename__ = 'amenities'
+    name = db.Column(db.String, nullable=False)
 
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = self.validate_name(value)
-
+    @validates('name')
     def validate_name(self, name):
         if name == "":
             raise ValueError("Name should be not empty")

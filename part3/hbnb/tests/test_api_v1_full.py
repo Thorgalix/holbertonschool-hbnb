@@ -6,22 +6,45 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from app import create_app
-from app.persistence.repository import InMemoryRepository
+from app import create_app, db
 from app.services import facade as facade_instance
 
 
 class BaseApiTest(unittest.TestCase):
     def setUp(self):
-        self.app = create_app()
+        # Create app with test config
+        self.app = create_app("config.TestConfig")
         self.app.config["TESTING"] = True
+
+        with self.app.app_context():
+            db.create_all()
+            # Create an admin user for testing
+            self.admin_user = facade_instance.create_user({
+                'first_name': 'Admin',
+                'last_name': 'User',
+                'email': 'admin@test.com',
+                'password': 'adminpass',
+                'is_admin': True
+            })
+
         self.client = self.app.test_client()
 
-        facade_instance.user_repo = InMemoryRepository()
-        facade_instance.amenity_repo = InMemoryRepository()
-        facade_instance.place_repo = InMemoryRepository()
-        facade_instance.review_repo = InMemoryRepository()
+        # Get admin JWT token
+        login_response = self.client.post('/api/v1/auth/login', json={
+            'email': 'admin@test.com',
+            'password': 'adminpass'
+        })
+        self.admin_token = login_response.get_json()['access_token']
         self.facade = facade_instance
+
+    def get_admin_headers(self):
+        """Return headers with admin JWT token"""
+        return {'Authorization': f'Bearer {self.admin_token}'}
+
+    def tearDown(self):
+        with self.app.app_context():
+            db.session.remove()
+            db.drop_all()
 
     def create_user(self, email="jane.doe@example.com", user_id="user-1"):
         payload = {
@@ -35,7 +58,7 @@ class BaseApiTest(unittest.TestCase):
 
     def create_amenity(self, name="WiFi"):
         payload = {"name": name}
-        return self.client.post("/api/v1/amenities/", json=payload)
+        return self.client.post("/api/v1/amenities/", json=payload, headers=self.get_admin_headers())
 
     def create_place(self, owner_id, amenity_ids=None, title="Cozy Cabin"):
         if amenity_ids is None:

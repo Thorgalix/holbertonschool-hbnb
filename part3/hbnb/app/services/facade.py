@@ -1,3 +1,4 @@
+from app import db
 from app.persistence.repository import SQLAlchemyRepository
 from app.persistence.repositories.user_repository import UserRepository
 from app.persistence.repositories.place_repository import PlaceRepository
@@ -124,11 +125,16 @@ class HBnBFacade:
             price=place_data["price"],
             latitude=place_data["latitude"],
             longitude=place_data["longitude"],
-            owner=owner,
-            amenities=amenities
+            user_id=place_data["owner_id"]
         )
 
         self.place_repository.add(place)
+
+        # Add amenities via relationship
+        for amenity in amenities:
+            place.amenities.append(amenity)
+        db.session.commit()
+
         return place
 
     def get_place(self, place_id):
@@ -163,8 +169,6 @@ class HBnBFacade:
                     raise ValueError(f"Amenity {amenity_id} not found")
                 if amenity not in place.amenities:
                     place.amenities.append(amenity)
-                if place not in amenity.places:
-                    amenity.places.append(place)
 
         self.place_repository.update(place.id, data)
         return place
@@ -174,17 +178,11 @@ class HBnBFacade:
         if not place:
             return None
 
-        # Keep relations consistent before deleting the place.
-        if place.owner and place in place.owner.places:
-            place.owner.places.remove(place)
-
-        for amenity in place.amenities:
-            if place in amenity.places:
-                amenity.places.remove(place)
-
+        # Delete associated reviews first
         for review in list(place.reviews):
-            self.delete_review(review.id)
+            self.review_repository.delete(review.id)
 
+        # Delete the place (amenities are removed via many-to-many cleanup)
         return self.place_repository.delete(place_id)
 
 
@@ -203,8 +201,8 @@ class HBnBFacade:
         review = Review(
             rating=review_data["rating"],
             text=review_data["text"],
-            user=user,
-            place=place
+            user_id=review_data["user_id"],
+            place_id=review_data["place_id"]
         )
         self.review_repository.add(review)
         return review
@@ -241,13 +239,7 @@ class HBnBFacade:
         review = self.review_repository.get(review_id)
         if not review:
             return None
-
-        # Retirer la review des listes de l'utilisateur et du place
-        if review.user and review in review.user.reviews:
-            review.user.reviews.remove(review)
-        if review.place and review in review.place.reviews:
-            review.place.reviews.remove(review)
-
+        # SQLAlchemy backrefs handle automatic removal from user.reviews and place.reviews
         return self.review_repository.delete(review_id)
 
     def user_already_reviewed_place(self, user_id, place_id):

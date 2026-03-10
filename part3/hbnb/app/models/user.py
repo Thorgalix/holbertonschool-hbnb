@@ -13,7 +13,7 @@ class User(BaseClass):
     is_admin = db.Column(db.Boolean, default=False)
 
     places = db.relationship('Place', backref='owner', lazy=True)
-    Reviews = db.relationship('Review', backref='owner', lazy=True)
+    reviews = db.relationship('Review', backref='user', lazy=True)
 
     @validates('first_name')
     def validate_first_name(self, key, first_name):

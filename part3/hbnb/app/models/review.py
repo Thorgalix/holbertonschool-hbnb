@@ -7,8 +7,8 @@ class Review(BaseClass):
     rating = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(100), nullable=False)
 
-    user_id = db.Column(db.String, db.ForeignKey("users.id"))
-    place_id = db.Column(db.String, db.ForeignKey("places.id"))
+    user_id = db.Column(db.String, db.ForeignKey("users.id"), nullable=False)
+    place_id = db.Column(db.String, db.ForeignKey("places.id"), nullable=False)
 
     @validates('text')
     def validate_text(self, key, text):

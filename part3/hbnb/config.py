@@ -9,7 +9,13 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 config = {
     'development': DevelopmentConfig,
+    'testing': TestConfig,
     'default': DevelopmentConfig
 }

@@ -1,6 +1,13 @@
 from app.models.Base_Class import BaseClass
-from app import db, bcrypt
+from app import db
 from sqlalchemy.orm import validates
+
+place_amenity = db.Table(
+    'place_amenity',
+    db.Column('place_id', db.String, db.ForeignKey('places.id'), primary_key=True),
+    db.Column('amenity_id', db.String, db.ForeignKey('amenities.id'), primary_key=True)
+)
+
 class Place(BaseClass):
     __tablename__ = 'places'
 
@@ -11,7 +18,13 @@ class Place(BaseClass):
     longitude = db.Column(db.Float, nullable=False)
 
     user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
-    Reviews = db.relationship('Review', backref='owner', lazy=True)
+    reviews = db.relationship('Review', backref='place', lazy=True)
+    amenities = db.relationship(
+        'Amenity',
+        secondary=place_amenity,
+        backref=db.backref('places', lazy=True),
+        lazy='subquery'
+    )
 
     @validates('title')
     def validate_title(self, key, title):

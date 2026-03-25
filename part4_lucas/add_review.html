@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <a href="index.html"><img src="images/logo.png" class="logo" alt="logo"></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html" class="login-button">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Identifier the place you're reviewing -->
+        <section class="place-details">
+            <h2>Cozy Apartment</h2>
+            <p>Host: Lucas Podevin</p>
+            <p>Price: $100 / night</p>
+        </section>
+
+        <section class="add_review">
+            <form id="review-form" class="form">
+                <h2>Add a Review</h2>
+            
+                <label for="review">Your Review:</label>
+                <textarea id="review" name="review" required placeholder="Write your review here..."></textarea>
+            
+                <label for="rating">Rating:</label>
+                <select id="rating" name="rating" required>
+                    <option value="" disabled selected>Select rating</option>
+                    <option value="1">1 - Poor</option>
+                    <option value="2">2 - Fair</option>
+                    <option value="3">3 - Good</option>
+                    <option value="4">4 - Very Good</option>
+                    <option value="5">5 - Excellent</option>
+                </select>
+
+                <button type="submit" class="details-button">Submit Review</button>
+            </form>
+        </section>    
+    </main>
+
+    <footer>
+        <p>All rights reserved</p>
+    </footer>
+
+</body>
+</html>

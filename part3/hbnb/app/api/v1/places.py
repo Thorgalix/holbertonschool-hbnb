@@ -29,6 +29,7 @@ place_create_model = api.model('PlaceCreate', {
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
+    'owner_id': fields.String(description='Owner user ID (admin only)'),
     'amenities': fields.List(fields.String, description="List of amenities ID's to add")
 })
 
@@ -50,8 +51,14 @@ class PlaceList(Resource):
     def post(self):
         """Register a new place"""
         current_user_id = get_jwt_identity()
+        current_user = get_jwt()
+        is_admin = current_user.get('is_admin', False)
+
         data = api.payload
-        data['owner_id'] = current_user_id  # forcer le propriétaire sur le user connecté
+        # Default behavior: owner is the authenticated user.
+        # Admin can override owner_id to create places for another user.
+        if not (is_admin and data.get('owner_id')):
+            data['owner_id'] = current_user_id
         try:
             place = facade.create_place(data)
             return {
@@ -90,6 +97,7 @@ class PlaceResource(Resource):
             "id": place.id,
             "title": place.title,
             "description": place.description,
+            "price": place.price,
             "latitude": place.latitude,
             "longitude": place.longitude,
             "owner": {
@@ -102,7 +110,7 @@ class PlaceResource(Resource):
                 {"id": a.id, "name": a.name} for a in place.amenities
             ],
             "reviews": [
-                {"id": a.id, "comment": a.text, "rating":a.rating} for a in place.reviews
+                {"id": a.id, "comment": a.text, "rating": a.rating, "user": {"first_name": a.user.first_name, "last_name": a.user.last_name}} for a in place.reviews
             ]
         }, 200
 

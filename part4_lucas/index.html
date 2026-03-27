@@ -11,8 +11,8 @@
     <header>
         <a href="index.html"><img src="images/logo.png" class="logo" alt="logo"></a>
         <nav>
-            <a href="index.html">Home</a>
-            <a href="login.html" class="login-button">Login</a>
+            <a href="index.html" class="login-button">Home</a>
+            <a href="login.html" id="login-link" class="login-button">Login</a>
         </nav>
     </header>
 
@@ -21,25 +21,16 @@
             <h2>Filter Places</h2>
             <label for="price-filter">Max Price:</label>
             <select id="price-filter">
+                <option value="10">$10</option>
                 <option value="50">$50</option>
                 <option value="100">$100</option>
-                <option value="200">$200</option>
+                <option value="all" selected>All</option>
             </select>
         </section>
 
         <section id="places-list">
             <h2>Available Places</h2>
-            <article class="place-card">
-                <h3>Cozy Apartment</h3>
-                <p>Price: $100 / night</p>
-                <a href="place.html?id1" class="details-button">View Details</a>
-            </article>
-
-            <article class="place-card">
-                <h3>Beach House</h3>
-                <p>Price: $200 / night</p>
-                <a href="place.html" class="details-button">View Details</a>
-            </article>
+            
 
         </section>
     </main>
@@ -47,6 +38,6 @@
     <footer>
         <p>All rights reserved</p>
     </footer>
-
+    <script src="scripts.js"></script>
 </body>
 </html>

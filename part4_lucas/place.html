@@ -11,45 +11,30 @@
     <header>
         <a href="index.html"><img src="images/logo.png" class="logo" alt="logo"></a>
         <nav>
-            <a href="index.html">Home</a>
-            <a href="login.html" class="login-button">Login</a>
+            <a href="index.html" class="login-button">Home</a>
+            <a href="login.html" id="login-link" class="login-button">Login</a>
         </nav>
     </header>
 
     <main>
         <section id="place-details" class="place-details">
 
-            <h2>Cozy Apartment</h2>
-
-            <div class="place-info">
-                <p><strong>Host:</strong> Lucas Podevin</p>
-                <p><strong>Price:</strong> $100</p>
-                <p><strong>Description:</strong> Nice place</p>
-                <p><strong>Amenities:</strong> WiFi</p>
-            </div>
-
         </section>
 
         <section id="reviews">
             <h3>Reviews</h3>
 
-            <article class="review-card">
-                <h4>Review by Alice</h4>
-                <p>Great stay!</p>
-                <p><strong>Rating:</strong> 5</p>
-            </article>
+            <!-- Add review button -->
+            <div class="add_review" id="add-review">
+                <a href="add_review.html" class="action-button">Add Review</a>
+            </div>
 
         </section>
-
-        <!-- Add review button -->
-        <div class="add_review">
-            <a href="add_review.html" class="details-button">Add Review</a>
-        </div>
     </main>
 
     <footer>
         <p>All rights reserved</p>
     </footer>
-
+    <script src="scripts.js"></script>
 </body>
 </html>

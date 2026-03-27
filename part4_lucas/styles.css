@@ -15,16 +15,12 @@
 
     --brand-600: #d97706;
     --brand-700: #b45309;
-    --accent-500: #ea580c;
-
     --shadow-sm: 0 6px 18px rgba(31, 42, 31, 0.08);
-    --shadow-md: 0 14px 32px rgba(31, 42, 31, 0.12);
 
     --radius-sm: 10px;
     --radius-md: 14px;
     --radius-lg: 20px;
 
-    --space-1: 0.25rem;
     --space-2: 0.5rem;
     --space-3: 0.75rem;
     --space-4: 1rem;
@@ -65,6 +61,12 @@ a {
     color: inherit;
 }
 
+/* Prevent auth-related UI flicker before JS auth check runs */
+#login-link,
+#add-review {
+    display: none;
+}
+
 header,
 main,
 footer {
@@ -92,11 +94,17 @@ nav {
 }
 
 nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
     padding: var(--space-2) var(--space-4);
     border-radius: 999px;
     text-decoration: none;
     color: var(--color-text-main);
     font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
     transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
@@ -107,8 +115,7 @@ nav a:focus-visible {
 }
 
 .login-button,
-.details-button,
-button {
+.action-button {
     border: 0;
     border-radius: 999px;
     background-color: var(--brand-600);
@@ -119,20 +126,27 @@ button {
     transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.login-button,
-.details-button {
+.login-button {
     display: inline-block;
-    padding: 0.6rem 1rem;
+    padding: 0.75rem 1rem;
 }
 
-button {
+.action-button {
+    appearance: none;
+    display: flex;
+    width: 100%;
+    min-height: 44px;
     padding: 0.75rem 1rem;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.2;
 }
 
 .login-button:hover,
-.details-button:hover,
-button:hover {
+.action-button:hover {
     transform: translateY(-1px);
     background-color: var(--brand-700);
     color: #ffffff;
@@ -238,8 +252,17 @@ textarea {
 }
 
 .add_review {
-    display: flex;
-    justify-content: flex-end;
+    width: 100%;
+}
+
+#reviews .add_review {
+    margin-top: var(--space-4);
+}
+
+.add_review .form {
+    max-width: none;
+    margin-inline: 0;
+    width: 100%;
 }
 
 footer {
@@ -269,9 +292,6 @@ footer {
         flex-wrap: wrap;
     }
 
-    .add_review {
-        justify-content: center;
-    }
 }
 
 @media (max-width: 980px) {

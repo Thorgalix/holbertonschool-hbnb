@@ -2,29 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const error = document.getElementById('login-error');
 
-    async function loginUser(email, password) {
-        const response = await fetch('http://127.0.0.1:5000/api/v1/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
-        return response;
-    }
-
-    async function submitReview(token, text, rating, place_id) {
-        const response = await fetch ('http://127.0.0.1:5000/api/v1/reviews/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { Authorization: 'Bearer ' + token } : {}),
-            },
-            body: JSON.stringify({ text, rating, place_id })
-        })
-        return response
-    }
-
     if (loginForm) {
         loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -44,7 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.cookie = `token=${data.access_token}; path=/`;
                     window.location.href = 'index.html';
                 } else {
-                    alert('Login failed: ' + response.statusText);
+                    if (error) {
+                        error.textContent = 'Authentication failed: invalid email or password';
+                    } else {
+                        alert('Login failed: ' + response.statusText);
+                    }
                 }
             } catch (err) {
                 if (error) {
@@ -120,6 +101,29 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 });
+
+async function loginUser(email, password) {
+    const response = await fetch('http://127.0.0.1:5000/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+    });
+    return response;
+}
+
+async function submitReview(token, text, rating, place_id) {
+    const response = await fetch ('http://127.0.0.1:5000/api/v1/reviews/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        },
+        body: JSON.stringify({ text, rating, place_id })
+    })
+    return response
+}
 
 function getCookie(name) {
   let matches = document.cookie.match(new RegExp(

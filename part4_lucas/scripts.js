@@ -13,6 +13,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return response;
     }
 
+    async function submitReview(token, text, rating, place_id) {
+        const response = await fetch ('http://127.0.0.1:5000/api/v1/reviews/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: 'Bearer ' + token } : {}),
+            },
+            body: JSON.stringify({ text, rating, place_id })
+        })
+        return response
+    }
+
     if (loginForm) {
         loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -83,16 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const reviewForm = document.getElementById('review-form');
-        const token = checkAuthentication();
+    if (reviewForm) {
+        const token = checkAuthentication(true);
+        if (!token) return;
+
         const placeId = getPlaceIdFromURL();
-
-        if (reviewForm) {
-            reviewForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                
-            });
+        if (!placeId) {
+            alert("Place not found");
+            return;
         }
+        reviewForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const text = document.getElementById('review').value.trim();
+            const rating = document.getElementById('rating').value;
+
+            if (!text || !rating) {
+                alert("Please leave a review and a rating.");
+                return;
+            }
+
+            const response = await submitReview(token, text, Number(rating), placeId);
+            handleResponse(response, reviewForm);
+        })
+    }
 });
 
 function getCookie(name) {
@@ -157,15 +183,24 @@ function displayPlaces(places) {
 
     places.forEach((place) => {
         const card = document.createElement('article');
+        const title = document.createElement('h3')
+        const paragraph = document.createElement('p')
+        const link = document.createElement('a')
+        
         card.className = 'place-card';
         card.dataset.price = place.price;
 
-        card.innerHTML = `
-            <h3>${place.title}</h3>
-            <p>Price: $${place.price} / night</p>
-            <a href="place.html?id=${place.id}" class="action-button">View Details</a>
-        `;
-        placesList.appendChild(card);
+        title.textContent = place.title
+        paragraph.textContent = 'Price: $' + place.price
+        link.href = 'place.html?id=' + place.id
+        link.className = 'action-button'
+        link.textContent = 'View Details'
+
+        card.appendChild(title);
+        card.appendChild(paragraph);
+        card.appendChild(link);
+
+        placesList.appendChild(card)
     });
 }
 
@@ -196,8 +231,12 @@ function displayPlaceDetails(place) {
     const placeDetails = document.getElementById('place-details');
     const reviewsSection = document.getElementById('reviews');
     const addReviewContainer = document.getElementById('add-review');
-    if (!placeDetails || !reviewsSection) {
+    const addReviewLink = addReviewContainer ? addReviewContainer.querySelector('a') : null;
+    if (!placeDetails) {
         return;
+    }
+    if (addReviewLink && place.id) {
+        addReviewLink.href = `add_review.html?id=${place.id}`;
     }
     let ownerName = 'Unknown Host';
     if (place.owner && place.owner.first_name && place.owner.last_name) {
@@ -207,15 +246,40 @@ function displayPlaceDetails(place) {
     if (place.amenities && place.amenities.length > 0) {
         amenitiesText = place.amenities.map((a) => a.name).join(', ');
     }
-    placeDetails.innerHTML = `
-    <h2>${place.title}</h2>
-    <div class="place-info">
-        <p><strong>Host:</strong> ${ownerName}</p>
-        <p><strong>Price:</strong> $${place.price}</p>
-        <p><strong>Description:</strong> ${place.description || 'No description'}</p>
-        <p><strong>Amenities:</strong> ${amenitiesText}</p>
-    </div>
-    `;
+
+    placeDetails.replaceChildren();
+
+    const titleEl = document.createElement('h2');
+    titleEl.textContent = place.title;
+    placeDetails.appendChild(titleEl);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'place-info';
+
+    const rows = [
+        ['Host', ownerName],
+        ['Price', '$' + place.price],
+        ['Description', place.description || 'No description'],
+        ['Amenities', amenitiesText]
+    ];
+
+    rows.forEach(([label, value]) => {
+        const p = document.createElement('p');
+        const strong = document.createElement('strong');
+
+        strong.textContent = label + ':';
+        p.appendChild(strong);
+        p.appendChild(document.createTextNode(' ' + String(value)));
+
+        infoDiv.appendChild(p);
+    });
+
+    placeDetails.appendChild(infoDiv);
+
+    // On add_review page, we only need place summary, not the reviews list.
+    if (!reviewsSection) {
+        return;
+    }
 
     while (reviewsSection.firstChild) {
         reviewsSection.removeChild(reviewsSection.firstChild);
@@ -242,15 +306,38 @@ function displayPlaceDetails(place) {
         if (review.user && review.user.first_name && review.user.last_name) {
             reviewAuthor = review.user.first_name + ' ' + review.user.last_name;
         }
-        reviewCard.innerHTML = `
-            <p>${review.comment}</p>
-            <p><strong>Rating:</strong> ${review.rating}</p>
-            <p><strong>By:</strong> ${reviewAuthor}</p>
-        `;
+
+        const commentLine = document.createElement('p');
+        commentLine.textContent = review.text || '';
+
+        const ratingLine = document.createElement('p');
+        const ratingLabel = document.createElement('strong');
+        ratingLabel.textContent = 'Rating:';
+        ratingLine.appendChild(ratingLabel);
+        ratingLine.appendChild(document.createTextNode(' ' + String(review.rating)));
+
+        const byLine = document.createElement('p');
+        const byLabel = document.createElement('strong');
+        byLabel.textContent = 'By:';
+        byLine.appendChild(byLabel);
+        byLine.appendChild(document.createTextNode(' ' + reviewAuthor));
+
+        reviewCard.appendChild(commentLine);
+        reviewCard.appendChild(ratingLine);
+        reviewCard.appendChild(byLine);
         reviewsSection.appendChild(reviewCard);
     })
 
     if (addReviewContainer) {
         reviewsSection.appendChild(addReviewContainer);
+    }
+}
+
+function handleResponse(response, reviewForm) {
+    if (response.ok) {
+        alert('Review submitted successfully!')
+        reviewForm.reset()
+    } else {
+        alert('Failed to submit review')
     }
 }

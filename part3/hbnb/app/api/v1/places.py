@@ -110,7 +110,7 @@ class PlaceResource(Resource):
                 {"id": a.id, "name": a.name} for a in place.amenities
             ],
             "reviews": [
-                {"id": a.id, "comment": a.text, "rating": a.rating, "user": {"first_name": a.user.first_name, "last_name": a.user.last_name}} for a in place.reviews
+                {"id": a.id, "text": a.text, "rating": a.rating, "user": {"first_name": a.user.first_name, "last_name": a.user.last_name}} for a in place.reviews
             ]
         }, 200
 
